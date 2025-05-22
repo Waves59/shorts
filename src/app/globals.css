@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #171717;
+  --background: #13161d;
+  --foreground: #cad8dd;
 }
 
 @theme inline {
@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #13161d;
+    --foreground: #cad8dd;
   }
 }
 
@@ -26,14 +26,25 @@ body {
 }
 
 @theme {
-  --*: initial;
+  --color-brand-tint-40: #ff3288;
+  --color-brand-tint-30: #ff76bc;
+  --color-brand-tint-60: #601e40;
+  --color-brand-tint-50: #bf3878;
+  --color-brand-tint-40-opacity-10: #cad8dd;
+  --color-brand-tint-40-opacity-20: #cad8dd;
+  --color-neutral-tint-50: #3d4556;
+  --color-neutral-tint-70: #13161d;
+  --color-white-opacity-100: #ffffff;
 
-  /* Colors */
-  --surface-primary: #ff3288; /* Brand/tint40 */
-  --surface-primary-pressed: #ff76bc; /* Brand/tint30 */
-  --surface-primary-expressive: linear-gradient(
-    135deg,
-    rgb(var(#ff3288)) 0%,
-    rgb(var(--color-primary-pressed)) 100%
-  ); /* Brand/tint40 → Brand/tint30 */
+  --animate-grow: grow 0.5s ease-in-out;
+
+  @keyframes grow {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.8);
+    }
+  }
 }

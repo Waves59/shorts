@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📱 Shorts - Lecteur Vidéo Vertical Mobile
 
-## Getting Started
+Un lecteur vidéo vertical mobile avec navigation d'épisodes et système de paywall, créé avec Next.js, TypeScript et Tailwind CSS.
 
-First, run the development server:
+## 🚀 Démo Live
+
+[https://shorts-blond.vercel.app/](https://shorts-blond.vercel.app/)
+
+## ✨ Fonctionnalités
+
+- **🎥 Lecteur vidéo vertical** - Streaming HLS optimisé pour mobile
+- **📺 Navigation entre épisodes** - Swipe vertical pour naviguer entre les épisodes
+- **💳 Système de paywall** - Modal de souscription avant l'épisode 3
+- **📱 Mobile-first** - Interface optimisée pour appareils mobiles
+- **⚡ Performance** - Chargement rapide et transitions fluides
+- **🎨 Design moderne** - Interface inspirée des apps natives
+
+## 🛠 Stack Technique
+
+- **Framework** : Next.js 15.3.2
+- **Language** : TypeScript
+- **Styling** : Tailwind CSS v4
+- **Vidéo** : HLS.js pour le streaming
+- **Navigation** : Swiper.js pour les transitions
+- **Déploiement** : Vercel
+
+## 🚀 Installation
 
 ```bash
+# Cloner le projet
+git clone [url-du-repo]
+cd shorts
+
+# Installer les dépendances
+npm install
+
+# Lancer le serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Structure du Projet
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+src/
+├── app/ # App Router (Next.js 13+)
+├── components/
+│ ├── player/ # Composants du lecteur vidéo
+│ ├── videoSwipper/ # Navigation entre vidéos
+│ └── ui/ # Composants UI réutilisables
+├── hooks/ # Hooks React personnalisés
+├── lib/ # Utilitaires et types
+└── mockups/ # Données de test
 
-## Learn More
+## 🎮 Navigation
 
-To learn more about Next.js, take a look at the following resources:
+- **URL Structure** : `/serie-id/episode-id`
+- **Exemple** : `/the-affair/episode-1`
+- **Navigation** : Swipe vertical entre les épisodes
+- **Paywall** : Affiché avant l'épisode 3
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎯 Épisodes Disponibles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **EP.1** - Introduction de l'histoire
+2. **EP.2** - Développement du conflit
+3. **EP.3** - Résolution (nécessite un abonnement)
 
-## Deploy on Vercel
+## 📱 Optimisations Mobile
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Interface tactile intuitive
+- Gestion des gestes de swipe
+- Chargement progressif des vidéos
+- Contrôles adaptatifs
+- Performance optimisée
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Scripts Disponibles
+
+```bash
+npm run dev          # Serveur de développement
+npm run build        # Build de production
+npm run start        # Serveur de production
+npm run lint         # Vérification du code
+```
+
+---
+
+_Créé dans le cadre d'un case study technique pour Shorts_

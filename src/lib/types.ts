@@ -8,4 +8,5 @@ export type Episode = {
   id: string;
   title: string;
   url: string;
+  premium: boolean;
 };

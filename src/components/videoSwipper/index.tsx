@@ -2,7 +2,6 @@
 
 import Player from "@internals/components/player";
 import { Series } from "@internals/lib/types";
-import { useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperClass, SwiperSlide } from "swiper/react";
 
@@ -13,17 +12,12 @@ export const VideoSwiper = ({
   series: Series;
   episodeIndex: number;
 }) => {
-  const [isSwiping, setIsSwiping] = useState(false);
-
   const handleSlideChange = (swiper: SwiperClass) => {
     window.history.pushState(
       null,
       "",
       `/${series.id}/${series.episodes[swiper.activeIndex].id}`
     );
-    setTimeout(() => {
-      setIsSwiping(false);
-    }, 600);
   };
 
   return (
@@ -33,7 +27,7 @@ export const VideoSwiper = ({
       spaceBetween={100}
       className="w-full h-full"
       initialSlide={episodeIndex}
-      onSliderFirstMove={() => setIsSwiping(true)}
+      onTouchEnd={handleSlideChange}
       onSlideChange={handleSlideChange}
     >
       {series.episodes.map((episode, index) => {
@@ -54,7 +48,6 @@ export const VideoSwiper = ({
                   url={episode.url}
                   isActive={isActive}
                   loadPriority={loadPriority}
-                  isSwiping={isSwiping}
                 />
               );
             }}

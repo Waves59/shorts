@@ -1,7 +1,8 @@
 "use client";
 
+import { formatTime } from "@internals/lib/time";
 import Image from "next/image";
-import { RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 
 interface CustomControlsProps {
   title: string;
@@ -16,17 +17,14 @@ export default function CustomControls({
   totalEpisodes,
   videoRef,
 }: CustomControlsProps) {
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const progressBarRef = useRef<HTMLDivElement>(null);
-  const hideControlsTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressFillRef = useRef<HTMLDivElement>(null);
+  const timeRef = useRef<HTMLDivElement>(null);
+  const durationRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
-
-  const isPlaying = useMemo(() => {
-    return !videoRef.current?.paused;
-  }, [videoRef.current?.paused]);
 
   // Initialize the duration when the video is loaded
   useEffect(() => {
@@ -34,7 +32,7 @@ export default function CustomControls({
     if (!video) return;
 
     const handleLoadedMetadata = () => {
-      setDuration(video.duration);
+      updateProgressTime();
     };
 
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -54,17 +52,22 @@ export default function CustomControls({
     if (!video) return;
 
     const handlePlay = () => {
+      setIsPlaying(true);
       setTimeout(() => {
         setShowControls(false);
       }, 500);
     };
 
     const handlePause = () => {
+      setIsPlaying(false);
       setShowControls(true);
     };
 
     video.addEventListener("play", handlePlay);
     video.addEventListener("pause", handlePause);
+
+    // Initialiser l'état au montage du composant
+    setIsPlaying(!video.paused);
 
     return () => {
       video.removeEventListener("play", handlePlay);
@@ -72,18 +75,35 @@ export default function CustomControls({
     };
   }, [videoRef]);
 
+  const handleTimeUpdate = () => {
+    // Don't update the progress during drag to avoid conflicts
+    if (!isDragging && progressFillRef.current) {
+      updateProgressTime();
+      const currentProgress =
+        (videoRef.current?.currentTime / videoRef.current?.duration) * 100;
+      const progressPercent = isNaN(currentProgress) ? 0 : currentProgress;
+      progressFillRef.current.style.width = `${progressPercent}%`;
+    }
+  };
+
+  const updateProgressTime = () => {
+    if (timeRef.current && durationRef.current) {
+      timeRef.current.textContent = formatTime(
+        videoRef.current?.currentTime || 0
+      );
+      durationRef.current.textContent = formatTime(
+        videoRef.current?.duration - videoRef.current?.currentTime || 0
+      );
+    }
+  };
+
   // Update the progress of the video
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const handleTimeUpdate = () => {
-      // Don't update the progress during drag to avoid conflicts
-      if (!isDragging) {
-        const currentProgress = (video.currentTime / video.duration) * 100;
-        setProgress(isNaN(currentProgress) ? 0 : currentProgress);
-      }
-    };
+    handleTimeUpdate();
+    updateProgressTime();
 
     video.addEventListener("timeupdate", handleTimeUpdate);
     return () => {
@@ -91,51 +111,21 @@ export default function CustomControls({
     };
   }, [videoRef, isDragging]);
 
-  // Handle the automatic display/hide of controls
   useEffect(() => {
-    // Function to handle the display/hide of controls
-    const resetControlsTimer = () => {
-      // Cancel the previous timer if it exists
-      if (hideControlsTimerRef.current) {
-        clearTimeout(hideControlsTimerRef.current);
-        hideControlsTimerRef.current = null;
-      }
-
-      // Show controls
-      setShowControls(true);
-
-      // Configure a new timer to hide the controls
-      if (!videoRef.current?.paused && !isDragging) {
-        hideControlsTimerRef.current = setTimeout(() => {
-          setShowControls(false);
-        }, 3000);
-      }
-    };
-
-    const handleDocumentMouseMove = () => {
-      resetControlsTimer();
-    };
-
-    document.addEventListener("mousemove", handleDocumentMouseMove);
-    document.addEventListener("touchstart", handleDocumentMouseMove, {
-      passive: true,
-    });
-
-    return () => {
-      document.removeEventListener("mousemove", handleDocumentMouseMove);
-      document.removeEventListener("touchstart", handleDocumentMouseMove);
-
-      if (hideControlsTimerRef.current) {
-        clearTimeout(hideControlsTimerRef.current);
-      }
-    };
-  }, [isPlaying, isDragging]);
+    console.log("setup time update");
+    handleTimeUpdate();
+    updateProgressTime();
+  }, [handleTimeUpdate, updateProgressTime]);
 
   const handleStartDrag = (
     e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
   ) => {
     e.stopPropagation();
     e.preventDefault();
+
+    if (!showControls) {
+      return;
+    }
 
     // Pause during drag
     if (!videoRef.current.paused) {
@@ -152,10 +142,12 @@ export default function CustomControls({
     }
 
     // Handle mouse move and end drag globally
-    document.addEventListener("mousemove", handleMouseMoveDrag);
-    document.addEventListener("mouseup", handleEndDrag);
-    document.addEventListener("touchmove", handleTouchMove, { passive: false });
-    document.addEventListener("touchend", handleEndDrag);
+    controlsRef.current?.addEventListener("mousemove", handleMouseMoveDrag);
+    controlsRef.current?.addEventListener("mouseup", handleEndDrag);
+    controlsRef.current?.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
+    controlsRef.current?.addEventListener("touchend", handleEndDrag);
   };
 
   // Handle mouse move during drag
@@ -189,10 +181,13 @@ export default function CustomControls({
       setIsDragging(false);
 
       // Clean up events
-      document.removeEventListener("mousemove", handleMouseMoveDrag);
-      document.removeEventListener("mouseup", handleEndDrag);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleEndDrag);
+      controlsRef.current?.removeEventListener(
+        "mousemove",
+        handleMouseMoveDrag
+      );
+      controlsRef.current?.removeEventListener("mouseup", handleEndDrag);
+      controlsRef.current?.removeEventListener("touchmove", handleTouchMove);
+      controlsRef.current?.removeEventListener("touchend", handleEndDrag);
     }
   };
 
@@ -206,7 +201,9 @@ export default function CustomControls({
       position = Math.max(0, Math.min(1, position));
 
       const newProgress = position * 100;
-      setProgress(newProgress);
+      if (progressFillRef.current) {
+        progressFillRef.current.style.width = `${newProgress}%`;
+      }
 
       // Update video current time
       videoRef.current.currentTime = position * videoRef.current.duration;
@@ -231,103 +228,94 @@ export default function CustomControls({
     }
   };
 
-  const formatTime = (seconds: number): string => {
-    if (isNaN(seconds)) return "00:00";
-
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
+  const isShowing = !isPlaying || showControls || isDragging;
 
   return (
     <div
       ref={controlsRef}
-      className={`absolute top-0 left-0 w-full h-full z-50 flex flex-col justify-between transition duration-100 ${
-        !isPlaying || showControls || isDragging ? "opacity-100" : "opacity-0"
-      }`}
+      className={
+        "absolute top-0 left-0 w-full h-full z-50 flex flex-col justify-between transition duration-100"
+      }
       onClick={handlePlayPause}
     >
-      {/* Overlay black */}
-      <div className="absolute inset-0 bg-gradient-to-t from-neutral-tint-70/80 via-transparent to-neutral-tint-50/30" />
+      {isShowing && (
+        <div className="w-full h-full">
+          {/* Overlay black */}
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-tint-70/80 via-transparent to-neutral-tint-50/30" />
 
-      {/* Controls */}
-      <div className="relative w-full h-full flex flex-col justify-between py-6">
-        <div className="flex-1 flex items-center justify-center">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePlayPause();
-            }}
-            className={
-              "pointer-events-auto w-40 h-40 flex items-center justify-center"
-            }
-          >
-            {isPlaying ? (
-              <Image width={40} height={40} src="/pause.svg" alt="pause" />
-            ) : (
-              <Image width={40} height={40} src="/play.svg" alt="play" />
-            )}
-          </button>
-        </div>
-
-        <div
-          className={`pointer-events-auto pt-8 ${
-            isDragging ? "opacity-100" : ""
-          }`}
-          onClick={handleProgressBarClick}
-          onMouseDown={handleStartDrag}
-          onTouchStart={handleStartDrag}
-        >
-          <div
-            className={`flex items-center justify-between ${
-              isDragging ? "opacity-0" : "opacity-100"
-            } transition-opacity`}
-          >
-            <div className="flex flex-col items-start justify-left pl-4 pb-4">
-              <h1 className="text-white text-xl font-bold">{title}</h1>
-              <p className="text-white text-sm font-medium">
-                EP.{episodeNumber} / {totalEpisodes}
-              </p>
-            </div>
-          </div>
-
-          <div
-            ref={progressBarRef}
-            className={`relative w-full h-1 bg-neutral-tint-50 mb-4 cursor-pointer hover:h-3 transition-all ${
-              isDragging ? "h-3 opacity-100" : "h-1"
-            }`}
-          >
-            <div
-              className="h-full bg-brand-tint-40"
-              style={{ width: `${progress}%` }}
-            />
-
-            {isDragging && (
-              <div
-                className="absolute bottom-full mb-2 px-2 py-1 rounded bg-neutral-tint-70 text-white text-xs font-medium transform -translate-x-1/2"
-                style={{ left: `${progress}%` }}
+          {/* Controls */}
+          <div className="relative w-full h-full flex flex-col justify-between py-6">
+            <div className="flex-1 flex items-center justify-center">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePlayPause();
+                }}
+                className={
+                  "pointer-events-auto w-40 h-40 flex items-center justify-center"
+                }
               >
-                {formatTime(videoRef.current?.currentTime || 0)}
-              </div>
-            )}
-          </div>
-
-          <div
-            className={`flex items-center justify-between px-4 ${
-              isDragging ? "opacity-0" : "opacity-100"
-            } transition-opacity`}
-          >
-            <div className="text-white text-sm font-medium">
-              {formatTime(videoRef.current?.currentTime || 0)}
+                {isPlaying ? (
+                  <Image width={40} height={40} src="/pause.svg" alt="pause" />
+                ) : (
+                  <Image width={40} height={40} src="/play.svg" alt="play" />
+                )}
+              </button>
             </div>
-            <div className="text-white text-sm font-medium">
-              {formatTime(duration - videoRef.current?.currentTime)}
+
+            <div
+              className={`pointer-events-auto pt-8 ${
+                isDragging ? "opacity-100" : ""
+              }`}
+              onClick={handleProgressBarClick}
+              onMouseDown={handleStartDrag}
+              onTouchStart={handleStartDrag}
+            >
+              <div
+                className={`flex items-center justify-between ${
+                  isDragging ? "opacity-0" : "opacity-100"
+                } transition-opacity`}
+              >
+                <div className="flex flex-col items-start justify-left pl-4 pb-4">
+                  <h1 className="text-white text-xl font-bold">{title}</h1>
+                  <p className="text-white text-sm font-medium">
+                    EP.{episodeNumber} / {totalEpisodes}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                ref={progressBarRef}
+                className={`relative w-full h-1 bg-neutral-tint-50 mb-4 cursor-pointer hover:h-3 transition-all ${
+                  isDragging ? "h-3 opacity-100" : "h-1"
+                }`}
+              >
+                <div
+                  ref={progressFillRef}
+                  className="h-full bg-brand-tint-40"
+                  style={{ width: `0%` }}
+                />
+              </div>
+
+              <div
+                className={`flex items-center justify-between px-4 ${
+                  isDragging ? "opacity-100" : "opacity-100"
+                } transition-opacity`}
+              >
+                <div
+                  ref={timeRef}
+                  className="text-white text-sm font-medium"
+                ></div>
+                <div
+                  ref={durationRef}
+                  className="text-white text-sm font-medium"
+                  id="duration"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

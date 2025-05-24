@@ -12,15 +12,13 @@ export default function VideoPlayer({
   url,
   isActive,
   loadPriority = "full",
-  isSwiping = false,
 }: {
   title: string;
   episodeNumber: number;
   totalEpisodes: number;
   url: string;
   isActive: boolean;
-  loadPriority?: "full" | "partial" | "none";
-  isSwiping?: boolean;
+  loadPriority: "full" | "partial" | "none";
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -125,7 +123,7 @@ export default function VideoPlayer({
     }
   };
 
-  const showControls = videoRef.current && !isSwiping && isActive;
+  const showControls = videoRef.current && isActive;
 
   return (
     <div className="w-full h-dvh relative overflow-hidden">

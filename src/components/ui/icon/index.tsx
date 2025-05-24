@@ -1,15 +1,17 @@
+import { LoadingIcon } from "@internals/components/ui/icon/LoadingIcon";
 import { ArrowLeft } from "./ArrowLeft";
 import { ArrowRight } from "./ArrowRight";
 import { PauseIcon } from "./PauseIcon";
 import { PlayIcon } from "./PlayIcon";
 
-export { ArrowLeft, ArrowRight, PauseIcon, PlayIcon };
+export { ArrowLeft, ArrowRight, LoadingIcon, PauseIcon, PlayIcon };
 
 const iconComponents = {
   "arrow-left": ArrowLeft,
   "arrow-right": ArrowRight,
   play: PlayIcon,
   pause: PauseIcon,
+  loading: LoadingIcon,
 } as const;
 
 export type IconName = keyof typeof iconComponents;

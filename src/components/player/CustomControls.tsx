@@ -85,7 +85,7 @@ export default function CustomControls({
 
           {/* Controls */}
           <div className="relative w-full h-full flex flex-col justify-between py-6 sm:visible invisible">
-            <div className="flex items-center justify-between px-4">
+            <div className="flex items-center justify-between">
               {/* Previous Episode */}
               {!swiper.isBeginning && (
                 <div className="flex items-center justify-start mr-auto">

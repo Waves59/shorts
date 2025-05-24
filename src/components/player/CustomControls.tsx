@@ -277,11 +277,13 @@ export default function CustomControls({
               <div
                 className={`flex items-center justify-between ${
                   isDragging ? "opacity-0" : "opacity-100"
-                } transition-opacity`}
+                } transition-opacity pb-4`}
               >
                 <div className="flex flex-col items-start justify-left pl-4 pb-4">
-                  <h1 className="text-white text-xl font-bold">{title}</h1>
-                  <p className="text-white text-sm font-medium">
+                  <h1 className="text-white sm:text-[34px]/[41px] text-[28px]/[34px] font-bold sm:tracking-[-0.4px] tracking-[-0.38px]">
+                    {title}
+                  </h1>
+                  <p className="text-brand-tint-40-opacity-10 font-regular sm:text-[22px]/[28px] text-[28px]/[34px] sm:tracking-[-0.38px] tracking-[-0.26px]">
                     EP.{episodeNumber} / {totalEpisodes}
                   </p>
                 </div>
@@ -289,7 +291,7 @@ export default function CustomControls({
 
               <div
                 ref={progressBarRef}
-                className={`relative w-full h-1 bg-neutral-tint-50 mb-4 cursor-pointer hover:h-3 transition-all ${
+                className={`relative w-full h-1 bg-neutral-tint-50 mb-2 cursor-pointer hover:h-3 transition-all ${
                   isDragging ? "h-3 opacity-100" : "h-1"
                 }`}
               >
@@ -305,12 +307,15 @@ export default function CustomControls({
                   isDragging ? "opacity-100" : "opacity-100"
                 } transition-opacity`}
               >
-                <div ref={timeRef} className="text-white text-sm font-medium">
+                <div
+                  ref={timeRef}
+                  className="text-white sm:text-[12px]/[16px] text-[11px]/[13px] sm:tracking-[-0px] tracking-[-0.06px]"
+                >
                   00:00
                 </div>
                 <div
                   ref={durationRef}
-                  className="text-white text-sm font-medium"
+                  className="text-white sm:text-[12px]/[16px] text-[11px]/[13px] sm:tracking-[-0px] tracking-[-0.06px]"
                   id="duration"
                 >
                   00:00

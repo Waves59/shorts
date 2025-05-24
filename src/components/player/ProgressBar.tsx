@@ -175,7 +175,7 @@ export default function ProgressBar({
 
   return (
     <div
-      className={`pointer-events-auto pt-8 ${isDragging ? "opacity-100" : ""}`}
+      className={`pointer-events-auto pt-2 ${isDragging ? "opacity-100" : ""}`}
       onClick={handleProgressBarClick}
       onMouseDown={handleStartDrag}
       onTouchStart={handleStartDrag}

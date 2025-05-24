@@ -84,8 +84,8 @@ export default function CustomControls({
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-tint-70/80 via-transparent to-neutral-tint-50/30" />
 
           {/* Controls */}
-          <div className="relative w-full h-full flex flex-col justify-between py-6 sm:visible invisible">
-            <div className="flex items-center justify-between">
+          <div className="relative w-full h-full flex flex-col justify-between py-6">
+            <div className="flex items-center justify-between  sm:visible invisible">
               {/* Previous Episode */}
               {!swiper.isBeginning && (
                 <div className="flex items-center justify-start mr-auto">
@@ -143,11 +143,11 @@ export default function CustomControls({
                   isDragging ? "opacity-0" : "opacity-100"
                 } transition-opacity pb-4`}
               >
-                <div className="flex flex-col items-start justify-left pl-4 pb-4">
-                  <h1 className="text-white sm:text-[34px]/[41px] text-[28px]/[34px] font-bold sm:tracking-[-0.4px] tracking-[-0.38px]">
+                <div className="flex flex-col items-start justify-left pl-4">
+                  <h1 className="text-white sm:text-[28px]/[34px] text-[22px]/[28px] font-bold sm:tracking-[-0.38px] tracking-[-0.26px]">
                     {title}
                   </h1>
-                  <p className="text-brand-tint-40-opacity-10 font-regular sm:text-[22px]/[28px] text-[28px]/[34px] sm:tracking-[-0.38px] tracking-[-0.26px]">
+                  <p className="text-brand-tint-40-opacity-10 font-regular sm:text-[16px]/[20px] text-[14xpx]/[18px] sm:tracking-[-0.26px] tracking-[-0.22px]">
                     EP.{episodeNumber} / {totalEpisodes}
                   </p>
                 </div>

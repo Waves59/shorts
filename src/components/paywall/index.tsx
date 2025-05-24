@@ -44,7 +44,7 @@ export default function Paywall({
       onClick={handleBackdropClick}
     >
       <div
-        className={`w-full max-w-md mx-4 md:mx-0 bg-neutral-tint-70 
+        className={`w-full max-w-md md:mx-0 bg-neutral-tint-70 
           rounded-t-3xl md:rounded-3xl 
           border-t md:border border-neutral-tint-50/20 
           transition-all duration-300 transform 

@@ -1,6 +1,6 @@
 "use server";
 
-import { VideoSwiper } from "@internals/components/videoSwipper";
+import { VideoSwiper } from "@internals/components/videoSwiper";
 import { Episode, Series } from "@internals/lib/types";
 import { SERIES } from "@internals/mockups/series";
 import { cookies } from "next/headers";

@@ -1,13 +1,8 @@
 "use client";
 
+import { PaywallProps } from "@internals/components/paywall/types";
+import { Button } from "@internals/components/ui/button";
 import { useEffect, useState } from "react";
-
-interface PaywallProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubscribe: () => void;
-  isLoading?: boolean;
-}
 
 export default function Paywall({
   isOpen,
@@ -43,7 +38,7 @@ export default function Paywall({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center md:items-center items-end justify-center transition-all duration-300 ${
+      className={`fixed inset-0 z-[100] flex items-center md:items-center justify-center transition-all duration-300 ${
         isAnimating ? "bg-black/60 backdrop-blur-sm" : "bg-transparent"
       }`}
       onClick={handleBackdropClick}
@@ -84,32 +79,32 @@ export default function Paywall({
           </div>
 
           {/* Features */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center space-x-3">
+          <ul className="space-y-4 mb-8">
+            <li className="flex items-center space-x-3">
               <div className="w-6 h-6 bg-brand-tint-40 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>
               </div>
               <span className="text-white text-base">
                 Unlimited access to all episodes
               </span>
-            </div>
-            <div className="flex items-center space-x-3">
+            </li>
+            <li className="flex items-center space-x-3">
               <div className="w-6 h-6 bg-brand-tint-40 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>
               </div>
               <span className="text-white text-base">
                 Ad-free viewing experience
               </span>
-            </div>
-            <div className="flex items-center space-x-3">
+            </li>
+            <li className="flex items-center space-x-3">
               <div className="w-6 h-6 bg-brand-tint-40 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>
               </div>
               <span className="text-white text-base">
                 Exclusive access to new episodes
               </span>
-            </div>
-          </div>
+            </li>
+          </ul>
 
           {/* Pricing */}
           <div className="bg-neutral-tint-50/20 rounded-2xl p-4 mb-6">
@@ -129,26 +124,27 @@ export default function Paywall({
             </div>
           </div>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons bigger height */}
           <div className="space-y-3">
-            <button
+            <Button
+              variant="gradient"
+              size="lg"
+              className="h-14"
+              fullWidth
               onClick={handleSubscribe}
               disabled={isLoading}
-              className={`w-full font-semibold py-4 rounded-2xl transition-all duration-200 active:scale-95 ${
-                isLoading
-                  ? "bg-gray-500 text-gray-300 cursor-not-allowed"
-                  : "bg-gradient-to-r from-brand-tint-40 to-brand-tint-30 text-white hover:from-brand-tint-50 hover:to-brand-tint-40"
-              }`}
             >
               {isLoading ? "Processing..." : "Claim Now - 50% Off"}
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="transparent-border"
+              size="lg"
+              fullWidth
               onClick={onClose}
-              className="w-full bg-transparent border-2 border-neutral-tint-50/30 text-brand-tint-40-opacity-10 font-medium py-3 rounded-2xl transition-all duration-200 hover:border-brand-tint-40/50 hover:text-white"
             >
               Maybe Later
-            </button>
+            </Button>
           </div>
 
           {/* Terms */}

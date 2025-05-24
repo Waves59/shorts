@@ -41,12 +41,14 @@ const VideoPlayer = ({
 
       const config = { ...HLS_CONFIG };
 
+      // Partial load for loading only the first 10 seconds for next and previous episodes
       if (loadPriority === "partial") {
         config.maxBufferLength = 10;
         config.maxMaxBufferLength = 20;
         config.autoStartLoad = true;
       }
 
+      // Full load for loading current episode
       if (loadPriority === "full") {
         config.startLevel = 0;
         config.manifestLoadingTimeOut = 10000;
@@ -65,12 +67,14 @@ const VideoPlayer = ({
       hlsRef.current.loadSource(url);
       hlsRef.current.attachMedia(video);
 
+      // Event for loading current episode
       hlsRef.current.on(Hls.Events.MEDIA_ATTACHED, () => {
         if (loadPriority === "full" && hlsRef.current) {
           hlsRef.current.startLoad();
         }
       });
 
+      // Event for loading current episode
       hlsRef.current.on(Hls.Events.MANIFEST_PARSED, () => {
         setIsLoaded(true);
 

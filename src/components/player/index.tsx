@@ -2,10 +2,10 @@
 
 import { HLS_CONFIG } from "@internals/components/player/constants";
 import Hls from "hls.js";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import CustomControls from "./CustomControls";
 
-export default function VideoPlayer({
+const VideoPlayer = ({
   title,
   episodeNumber,
   totalEpisodes,
@@ -19,7 +19,7 @@ export default function VideoPlayer({
   url: string;
   isActive: boolean;
   loadPriority: "full" | "partial" | "none";
-}) {
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -146,4 +146,6 @@ export default function VideoPlayer({
       )}
     </div>
   );
-}
+};
+
+export default memo(VideoPlayer);

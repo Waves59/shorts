@@ -1,8 +1,9 @@
 "use client";
 
+import useDebounceCallback from "@internals/hooks/useDebounceCallback";
 import { formatTime } from "@internals/lib/time";
 import Image from "next/image";
-import { RefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 interface CustomControlsProps {
   title: string;
@@ -26,6 +27,78 @@ export default function CustomControls({
   const durationRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
 
+  const debouncedHideControls = useDebounceCallback(
+    () => setShowControls(false),
+    6000
+  );
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+      debouncedHideControls();
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+      setShowControls(true);
+    };
+
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+
+    // Initialiser l'état au montage du composant
+    setIsPlaying(!video.paused);
+
+    return () => {
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+    };
+  }, [videoRef, debouncedHideControls]);
+
+  const updateProgressTime = useCallback(() => {
+    if (timeRef.current && durationRef.current) {
+      timeRef.current.textContent = formatTime(
+        videoRef.current?.currentTime || 0
+      );
+      durationRef.current.textContent = formatTime(
+        videoRef.current?.duration - videoRef.current?.currentTime || 0
+      );
+    }
+  }, [videoRef]);
+
+  const handleTimeUpdate = useCallback(() => {
+    // Don't update the progress during drag to avoid conflicts
+    if (!isDragging && progressFillRef.current) {
+      const currentProgress =
+        (videoRef.current?.currentTime / videoRef.current?.duration) * 100;
+      const progressPercent = isNaN(currentProgress) ? 0 : currentProgress;
+      progressFillRef.current.style.width = `${progressPercent}%`;
+    }
+  }, [isDragging, videoRef]);
+
+  // Update the progress of the video
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    handleTimeUpdate();
+    updateProgressTime();
+
+    video.addEventListener("timeupdate", () => {
+      handleTimeUpdate();
+      updateProgressTime();
+    });
+    return () => {
+      video.removeEventListener("timeupdate", () => {
+        handleTimeUpdate();
+        updateProgressTime();
+      });
+    };
+  }, [videoRef, isDragging, handleTimeUpdate, updateProgressTime]);
+
   // Initialize the duration when the video is loaded
   useEffect(() => {
     const video = videoRef.current;
@@ -45,77 +118,7 @@ export default function CustomControls({
     return () => {
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
-  }, [videoRef]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handlePlay = () => {
-      setIsPlaying(true);
-      setTimeout(() => {
-        setShowControls(false);
-      }, 500);
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-      setShowControls(true);
-    };
-
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
-
-    // Initialiser l'état au montage du composant
-    setIsPlaying(!video.paused);
-
-    return () => {
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
-    };
-  }, [videoRef]);
-
-  const handleTimeUpdate = () => {
-    // Don't update the progress during drag to avoid conflicts
-    if (!isDragging && progressFillRef.current) {
-      updateProgressTime();
-      const currentProgress =
-        (videoRef.current?.currentTime / videoRef.current?.duration) * 100;
-      const progressPercent = isNaN(currentProgress) ? 0 : currentProgress;
-      progressFillRef.current.style.width = `${progressPercent}%`;
-    }
-  };
-
-  const updateProgressTime = () => {
-    if (timeRef.current && durationRef.current) {
-      timeRef.current.textContent = formatTime(
-        videoRef.current?.currentTime || 0
-      );
-      durationRef.current.textContent = formatTime(
-        videoRef.current?.duration - videoRef.current?.currentTime || 0
-      );
-    }
-  };
-
-  // Update the progress of the video
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    handleTimeUpdate();
-    updateProgressTime();
-
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    return () => {
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-    };
-  }, [videoRef, isDragging]);
-
-  useEffect(() => {
-    console.log("setup time update");
-    handleTimeUpdate();
-    updateProgressTime();
-  }, [handleTimeUpdate, updateProgressTime]);
+  }, [videoRef, updateProgressTime]);
 
   const handleStartDrag = (
     e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
@@ -302,15 +305,16 @@ export default function CustomControls({
                   isDragging ? "opacity-100" : "opacity-100"
                 } transition-opacity`}
               >
-                <div
-                  ref={timeRef}
-                  className="text-white text-sm font-medium"
-                ></div>
+                <div ref={timeRef} className="text-white text-sm font-medium">
+                  00:00
+                </div>
                 <div
                   ref={durationRef}
                   className="text-white text-sm font-medium"
                   id="duration"
-                ></div>
+                >
+                  00:00
+                </div>
               </div>
             </div>
           </div>

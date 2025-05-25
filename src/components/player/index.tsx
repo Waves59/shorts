@@ -137,8 +137,8 @@ const VideoPlayer = ({
   };
 
   const showControls = useMemo(() => {
-    return videoRef.current && isActive;
-  }, [isActive]);
+    return videoRef.current && isActive && isLoaded;
+  }, [isActive, isLoaded]);
 
   const customControlsProps = useMemo(
     () => ({

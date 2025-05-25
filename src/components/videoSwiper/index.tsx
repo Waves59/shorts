@@ -2,11 +2,22 @@
 
 import { subscribeToPremium } from "@internals/app/actions/subscription";
 import Paywall from "@internals/components/paywall";
-import Player from "@internals/components/player";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+
+import { LoadingIcon } from "@internals/components/ui/icon";
 import { Series } from "@internals/lib/types";
-import { useEffect, useState, useTransition } from "react";
 import "swiper/css";
 import { Swiper, SwiperClass, SwiperSlide } from "swiper/react";
+
+// Lazy load Player component because heavy component
+const Player = lazy(() => import("@internals/components/player"));
 
 export const VideoSwiper = ({
   series,
@@ -20,8 +31,11 @@ export const VideoSwiper = ({
   onPremiumUpdate?: (isPremium: boolean) => void;
 }) => {
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(episodeIndex);
+  const [previousEpisodeIndex, setPreviousEpisodeIndex] =
+    useState(episodeIndex);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const swiperRef = useRef<SwiperClass | null>(null);
 
   // Check if current episode should show paywall
   useEffect(() => {
@@ -31,6 +45,8 @@ export const VideoSwiper = ({
   }, [currentEpisodeIndex, isPremium, series.episodes]);
 
   const handleSlideChange = (swiper: SwiperClass) => {
+    // Save previous index before changing
+    setPreviousEpisodeIndex(currentEpisodeIndex);
     setCurrentEpisodeIndex(swiper.activeIndex);
     if (series) {
       window.history.pushState(
@@ -66,6 +82,23 @@ export const VideoSwiper = ({
     });
   };
 
+  const handleClosePaywall = () => {
+    setShowPaywall(false);
+    // Go back to previous slide if user refuses the paywall
+    if (swiperRef.current && previousEpisodeIndex !== currentEpisodeIndex) {
+      swiperRef.current.slideTo(previousEpisodeIndex);
+      setCurrentEpisodeIndex(previousEpisodeIndex);
+      // Update URL as well
+      if (series) {
+        window.history.pushState(
+          null,
+          "",
+          `/${series.id}/${series.episodes[previousEpisodeIndex].id}`
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Swiper
@@ -77,6 +110,9 @@ export const VideoSwiper = ({
         initialSlide={episodeIndex}
         onTouchEnd={handleSlideChange}
         onSlideChange={handleSlideChange}
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+        }}
       >
         {series.episodes.map((episode, index) => {
           return (
@@ -89,14 +125,27 @@ export const VideoSwiper = ({
                   : "none";
 
                 return (
-                  <Player
-                    title={series.title}
-                    episodeNumber={index + 1}
-                    totalEpisodes={series.episodes.length}
-                    url={episode.url}
-                    isActive={isActive}
-                    loadPriority={loadPriority}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="w-full h-full bg-neutral-tint-70 flex items-center justify-center">
+                        <LoadingIcon
+                          size={40}
+                          className="w-10 h-10 animate-spin"
+                        />
+                      </div>
+                    }
+                  >
+                    <div className="animate-fadeIn opacity-0 w-full h-full">
+                      <Player
+                        title={series.title}
+                        episodeNumber={index + 1}
+                        totalEpisodes={series.episodes.length}
+                        url={episode.url}
+                        isActive={isActive}
+                        loadPriority={loadPriority}
+                      />
+                    </div>
+                  </Suspense>
                 );
               }}
             </SwiperSlide>
@@ -108,7 +157,7 @@ export const VideoSwiper = ({
       {showPaywall && (
         <Paywall
           isOpen={showPaywall}
-          onClose={() => setShowPaywall(false)}
+          onClose={handleClosePaywall}
           onSubscribe={handleSubscribe}
           isLoading={isPending}
         />

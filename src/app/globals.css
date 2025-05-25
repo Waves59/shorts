@@ -40,6 +40,8 @@ body {
 
   --animate-grow: grow 0.5s ease-in-out;
 
+  --animate-fadeIn: fadeIn 0.5s ease-in-out 0.3s forwards;
+
   @keyframes grow {
     0%,
     100% {
@@ -47,6 +49,15 @@ body {
     }
     50% {
       transform: scale(0.8);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 }

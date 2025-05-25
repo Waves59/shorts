@@ -8,7 +8,6 @@ export default function ProgressBar({
   videoRef,
   isDragging,
   setIsDragging,
-  controlsRef,
 }: ProgressBarProps) {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const progressFillRef = useRef<HTMLDivElement>(null);
@@ -41,18 +40,18 @@ export default function ProgressBar({
     const video = videoRef.current;
     if (!video) return;
 
+    const handleTimeUpdateEvent = () => {
+      handleTimeUpdate();
+      updateProgressTime();
+    };
+
     handleTimeUpdate();
     updateProgressTime();
 
-    video.addEventListener("timeupdate", () => {
-      handleTimeUpdate();
-      updateProgressTime();
-    });
+    video.addEventListener("timeupdate", handleTimeUpdateEvent);
+
     return () => {
-      video.removeEventListener("timeupdate", () => {
-        handleTimeUpdate();
-        updateProgressTime();
-      });
+      video.removeEventListener("timeupdate", handleTimeUpdateEvent);
     };
   }, [videoRef, isDragging, handleTimeUpdate, updateProgressTime]);
 
@@ -80,9 +79,6 @@ export default function ProgressBar({
   const handleStartDrag = (
     e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
   ) => {
-    e.stopPropagation();
-    e.preventDefault();
-
     // Pause during drag
     if (!videoRef.current.paused) {
       videoRef.current.pause();
@@ -96,18 +92,10 @@ export default function ProgressBar({
     } else if ("clientX" in e) {
       updateProgressFromEvent(e.clientX);
     }
-
-    // Handle mouse move and end drag globally
-    controlsRef.current?.addEventListener("mousemove", handleMouseMoveDrag);
-    controlsRef.current?.addEventListener("mouseup", handleEndDrag);
-    controlsRef.current?.addEventListener("touchmove", handleTouchMove, {
-      passive: false,
-    });
-    controlsRef.current?.addEventListener("touchend", handleEndDrag);
   };
 
   // Handle mouse move during drag
-  const handleMouseMoveDrag = (e: MouseEvent) => {
+  const handleMouseMoveDrag = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging && progressBarRef.current && videoRef.current) {
       e.preventDefault();
       updateProgressFromEvent(e.clientX);
@@ -115,35 +103,26 @@ export default function ProgressBar({
   };
 
   // Handle touch move during drag
-  const handleTouchMove = (e: TouchEvent) => {
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     if (
       isDragging &&
       progressBarRef.current &&
       videoRef.current &&
       e.touches.length > 0
     ) {
-      e.preventDefault();
       updateProgressFromEvent(e.touches[0].clientX);
     }
   };
 
   // End drag
-  const handleEndDrag = (e: MouseEvent | TouchEvent) => {
+  const handleEndDrag = () => {
     if (isDragging) {
-      e.stopPropagation();
-
-      videoRef.current.play();
+      // Use requestAnimationFrame to avoid lag
+      requestAnimationFrame(() => {
+        videoRef.current.play();
+      });
 
       setIsDragging(false);
-
-      // Clean up events
-      controlsRef.current?.removeEventListener(
-        "mousemove",
-        handleMouseMoveDrag
-      );
-      controlsRef.current?.removeEventListener("mouseup", handleEndDrag);
-      controlsRef.current?.removeEventListener("touchmove", handleTouchMove);
-      controlsRef.current?.removeEventListener("touchend", handleEndDrag);
     }
   };
 
@@ -161,24 +140,24 @@ export default function ProgressBar({
         progressFillRef.current.style.width = `${newProgress}%`;
       }
 
-      // Update video current time
-      videoRef.current.currentTime = position * videoRef.current.duration;
-    }
-  };
-
-  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) {
-      e.stopPropagation();
-      updateProgressFromEvent(e.clientX);
+      // Use requestAnimationFrame to avoid lag
+      requestAnimationFrame(() => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = position * videoRef.current.duration;
+        }
+      });
     }
   };
 
   return (
     <div
       className={`pointer-events-auto pt-2 ${isDragging ? "opacity-100" : ""}`}
-      onClick={handleProgressBarClick}
       onMouseDown={handleStartDrag}
       onTouchStart={handleStartDrag}
+      onMouseMove={handleMouseMoveDrag}
+      onTouchMove={handleTouchMove}
+      onMouseUpCapture={handleEndDrag}
+      onTouchEnd={handleEndDrag}
     >
       <div
         ref={progressBarRef}

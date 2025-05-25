@@ -66,16 +66,13 @@ export const VideoSwiper = ({
     });
   };
 
-  const handleClosePaywall = () => {
-    setShowPaywall(false);
-  };
-
   return (
     <>
       <Swiper
         direction="vertical"
         slidesPerView={1}
         spaceBetween={100}
+        touchStartPreventDefault={false}
         className="w-full h-full"
         initialSlide={episodeIndex}
         onTouchEnd={handleSlideChange}
@@ -111,7 +108,7 @@ export const VideoSwiper = ({
       {showPaywall && (
         <Paywall
           isOpen={showPaywall}
-          onClose={handleClosePaywall}
+          onClose={() => setShowPaywall(false)}
           onSubscribe={handleSubscribe}
           isLoading={isPending}
         />

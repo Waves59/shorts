@@ -1,9 +1,10 @@
 "use client";
 
 import { HLS_CONFIG } from "@internals/components/player/constants";
+import { useVideoState } from "@internals/components/player/hooks/useVideoState";
 import Hls from "hls.js";
-import { memo, useEffect, useRef, useState } from "react";
-import CustomControls from "./CustomControls";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import CustomControls from "./components/CustomControls";
 
 const VideoPlayer = ({
   title,
@@ -23,6 +24,7 @@ const VideoPlayer = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { optimizedPlay, optimizedPause, resetVideo } = useVideoState(videoRef);
 
   useEffect(() => {
     const setupHls = (video: HTMLVideoElement) => {
@@ -112,12 +114,19 @@ const VideoPlayer = ({
     if (!video || !isLoaded || loadPriority === "none") return;
 
     if (isActive && loadPriority === "full") {
-      video.play();
+      optimizedPlay();
     } else {
-      video.pause();
-      video.currentTime = 0;
+      optimizedPause();
+      resetVideo();
     }
-  }, [isActive, isLoaded, loadPriority]);
+  }, [
+    isActive,
+    isLoaded,
+    loadPriority,
+    optimizedPlay,
+    optimizedPause,
+    resetVideo,
+  ]);
 
   const handleVideoClick = () => {
     if (videoRef.current?.paused) {
@@ -127,7 +136,19 @@ const VideoPlayer = ({
     }
   };
 
-  const showControls = videoRef.current && isActive;
+  const showControls = useMemo(() => {
+    return videoRef.current && isActive;
+  }, [isActive]);
+
+  const customControlsProps = useMemo(
+    () => ({
+      title,
+      episodeNumber,
+      totalEpisodes,
+      videoRef: videoRef as React.RefObject<HTMLVideoElement>,
+    }),
+    [title, episodeNumber, totalEpisodes]
+  );
 
   return (
     <div className="w-full h-dvh relative overflow-hidden">
@@ -140,14 +161,7 @@ const VideoPlayer = ({
         autoPlay={isActive && loadPriority === "full"}
         preload={loadPriority === "none" ? "none" : "auto"}
       />
-      {showControls && (
-        <CustomControls
-          title={title}
-          episodeNumber={episodeNumber}
-          totalEpisodes={totalEpisodes}
-          videoRef={videoRef as React.RefObject<HTMLVideoElement>}
-        />
-      )}
+      {showControls && <CustomControls {...customControlsProps} />}
     </div>
   );
 };

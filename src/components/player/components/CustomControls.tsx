@@ -24,7 +24,7 @@ export default function CustomControls({
   const [isDragging, setIsDragging] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
-  const swiper = useSwiper();
+  const { animating, isBeginning, isEnd, slidePrev, slideNext } = useSwiper();
 
   const debouncedHideControls = useDebounceCallback(
     () => setShowControls(false),
@@ -48,7 +48,7 @@ export default function CustomControls({
     video.addEventListener("play", handlePlay);
     video.addEventListener("pause", handlePause);
 
-    // Initialiser l'état au montage du composant
+    // Initialize state on component mount
     setIsPlaying(!video.paused);
 
     return () => {
@@ -61,14 +61,19 @@ export default function CustomControls({
     const video = videoRef.current;
     if (!video) return;
 
-    if (video.paused) {
-      video.play();
-    } else {
-      video.pause();
-    }
+    // Use requestAnimationFrame to optimize state changes
+    requestAnimationFrame(() => {
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
   };
 
-  const isShowing = !isPlaying || showControls || isDragging;
+  const isShowing = animating
+    ? false
+    : !isPlaying || showControls || isDragging;
 
   return (
     <div
@@ -87,14 +92,14 @@ export default function CustomControls({
           <div className="relative w-full h-full flex flex-col justify-between py-6">
             <div className="flex items-center justify-between  sm:visible invisible">
               {/* Previous Episode */}
-              {!swiper.isBeginning && (
+              {!isBeginning && (
                 <div className="flex items-center justify-start mr-auto">
                   <Button
                     variant="ghost"
                     size="lg"
                     onClick={(e) => {
                       e.stopPropagation();
-                      swiper.slidePrev();
+                      slidePrev();
                     }}
                     className="text-white hover:text-brand-tint-40"
                   >
@@ -104,14 +109,14 @@ export default function CustomControls({
                 </div>
               )}
               {/* Next Episode */}
-              {!swiper.isEnd && (
+              {!isEnd && (
                 <div className="flex items-center justify-end ml-auto">
                   <Button
                     variant="ghost"
                     size="lg"
                     onClick={(e) => {
                       e.stopPropagation();
-                      swiper.slideNext();
+                      slideNext();
                     }}
                     className="text-white hover:text-brand-tint-40"
                   >
@@ -157,7 +162,6 @@ export default function CustomControls({
                 videoRef={videoRef}
                 isDragging={isDragging}
                 setIsDragging={setIsDragging}
-                controlsRef={controlsRef}
               />
             </div>
           </div>

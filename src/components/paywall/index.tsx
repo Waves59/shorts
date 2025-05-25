@@ -2,6 +2,7 @@
 
 import { PaywallProps } from "@internals/components/paywall/types";
 import { Button } from "@internals/components/ui/button";
+import useDebounceCallback from "@internals/hooks/useDebounceCallback";
 import { useEffect, useState } from "react";
 
 export default function Paywall({
@@ -13,15 +14,18 @@ export default function Paywall({
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  const debounceAnimating = useDebounceCallback((value: boolean) => {
+    setIsAnimating(value);
+  }, 100);
+
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
-      setTimeout(() => setIsAnimating(true), 10);
+      debounceAnimating(true);
     } else {
-      setIsAnimating(false);
-      setTimeout(() => setIsVisible(false), 300);
+      debounceAnimating(false);
     }
-  }, [isOpen]);
+  }, [isOpen, debounceAnimating]);
 
   const handleSubscribe = () => {
     onSubscribe();

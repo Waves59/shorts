@@ -31,8 +31,6 @@ export const VideoSwiper = ({
   onPremiumUpdate?: (isPremium: boolean) => void;
 }) => {
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(episodeIndex);
-  const [previousEpisodeIndex, setPreviousEpisodeIndex] =
-    useState(episodeIndex);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isPending, startTransition] = useTransition();
   const swiperRef = useRef<SwiperClass | null>(null);
@@ -46,7 +44,6 @@ export const VideoSwiper = ({
 
   const handleSlideChange = (swiper: SwiperClass) => {
     // Save previous index before changing
-    setPreviousEpisodeIndex(currentEpisodeIndex);
     setCurrentEpisodeIndex(swiper.activeIndex);
     if (series) {
       window.history.pushState(
@@ -84,19 +81,6 @@ export const VideoSwiper = ({
 
   const handleClosePaywall = () => {
     setShowPaywall(false);
-    // Go back to previous slide if user refuses the paywall
-    if (swiperRef.current && previousEpisodeIndex !== currentEpisodeIndex) {
-      swiperRef.current.slideTo(previousEpisodeIndex);
-      setCurrentEpisodeIndex(previousEpisodeIndex);
-      // Update URL as well
-      if (series) {
-        window.history.pushState(
-          null,
-          "",
-          `/${series.id}/${series.episodes[previousEpisodeIndex].id}`
-        );
-      }
-    }
   };
 
   return (

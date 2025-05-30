@@ -10,7 +10,8 @@ export async function subscribeToPremium() {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      // maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 1, // 1 minute
       path: "/",
     });
 
